@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>EchoLink Messenger — Temporary Private Chat</title>
+<meta name="description" content="EchoLink Messenger — a temporary, no-login, no-database chat room. Connect with a code, chat, and disappear." />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1.21.3/index.js"></script>
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-anim">
+  <span class="orb orb1"></span>
+  <span class="orb orb2"></span>
+  <span class="orb orb3"></span>
+</div>
+
+<button id="themeToggle" class="theme-toggle" title="Toggle theme" aria-label="Toggle dark mode">
+  <img src="assets/moon.svg" alt="" id="themeIconMoon" class="theme-icon" />
+  <img src="assets/sun.svg" alt="" id="themeIconSun" class="theme-icon hidden" />
+</button>
+
+<!-- ================= HOME PAGE ================= -->
+<main id="homeView" class="view home-view">
+  <div class="glass-card home-card fade-in">
+
+    <div class="brand">
+      <img src="assets/logo.svg" alt="EchoLink logo" class="logo" onerror="this.style.display='none'" />
+      <h1 class="brand-title">Echo<span>Link</span></h1>
+      <p class="brand-sub">Temporary rooms. Real conversations. Nothing saved.</p>
+    </div>
+
+    <form id="entryForm" class="entry-form" autocomplete="off">
+      <div class="field">
+        <label for="username">Your name</label>
+        <input type="text" id="username" name="username" maxlength="20" placeholder="e.g. Alex" required />
+      </div>
+
+      <div class="field">
+        <label for="roomCode">Room code</label>
+        <div class="room-input-row">
+          <input type="text" id="roomCode" name="roomCode" maxlength="8" placeholder="e.g. 7F3K9Q" required />
+          <button type="button" id="generateBtn" class="icon-btn" title="Generate room code">✨</button>
+          <button type="button" id="copyBtn" class="icon-btn" title="Copy room code">
+            <img src="assets/copy.svg" alt="Copy" onerror="this.replaceWith(document.createTextNode('⧉'))"/>
+          </button>
+          <button type="button" id="qrBtn" class="icon-btn" title="Show QR code">
+            <img src="assets/qr.svg" alt="QR" onerror="this.replaceWith(document.createTextNode('▦'))"/>
+          </button>
+        </div>
+        <p class="hint">Share this code with your group. Rooms hold up to 8 people.</p>
+      </div>
+
+      <button type="submit" id="joinBtn" class="primary-btn ripple">
+        <span>Join Room</span>
+      </button>
+    </form>
+
+    <p class="footer-note">No signup. No database. Messages vanish when everyone leaves.</p>
+  </div>
+</main>
+
+<!-- QR Modal -->
+<div id="qrModal" class="modal hidden">
+  <div class="modal-content glass-card fade-in">
+    <button class="modal-close" id="qrClose">&times;</button>
+    <h3>Scan to join</h3>
+    <div id="qrCanvas"></div>
+    <p id="qrRoomLabel" class="qr-room-label"></p>
+  </div>
+</div>
+
+<!-- Image Lightbox -->
+<div id="lightbox" class="modal hidden">
+  <div class="lightbox-content">
+    <button class="modal-close lightbox-close" id="lightboxClose">&times;</button>
+    <img id="lightboxImg" src="" alt="Full size image" />
+  </div>
+</div>
+
+<!-- ================= CHAT PAGE ================= -->
+<main id="chatView" class="view chat-view hidden">
+  <header class="chat-header glass-card">
+    <div class="chat-header-left">
+      <img src="assets/logo.svg" alt="" class="logo-sm" onerror="this.style.display='none'" />
+      <div>
+        <h2 class="room-title">Room: <span id="roomLabel"></span></h2>
+        <div class="status-row">
+          <span id="onlineDot" class="status-dot offline"></span>
+          <span id="onlineText">Connecting…</span>
+        </div>
+      </div>
+    </div>
+    <div class="chat-header-right">
+      <button id="copyRoomBtn" class="icon-btn" title="Copy room code">
+        <img src="assets/copy.svg" alt="Copy" onerror="this.replaceWith(document.createTextNode('⧉'))"/>
+      </button>
+      <button id="leaveBtn" class="icon-btn danger" title="Leave room">⏻</button>
+    </div>
+  </header>
+
+  <section id="messages" class="messages"></section>
+
+  <div id="typingIndicator" class="typing-indicator hidden">
+    <span></span><span></span><span></span>
+    <em id="typingWho">Someone</em><span id="typingSuffix"> is typing…</span>
+  </div>
+
+  <div id="dropZone" class="drop-zone hidden">
+    <p>Drop a file to send 📎</p>
+  </div>
+
+  <footer class="composer glass-card">
+    <button id="emojiBtn" class="icon-btn" title="Emoji">
+      <img src="assets/emoji.svg" alt="Emoji" onerror="this.replaceWith(document.createTextNode('🙂'))"/>
+    </button>
+
+    <button id="uploadBtn" class="icon-btn" title="Send a file or photo">
+      <img src="assets/upload.svg" alt="Upload" onerror="this.replaceWith(document.createTextNode('📎'))"/>
+    </button>
+    <input type="file" id="fileInput" hidden />
+
+    <textarea id="messageInput" placeholder="Type a message…" maxlength="2000" rows="1"></textarea>
+
+    <button id="micBtn" class="icon-btn" title="Record voice message">
+      <img src="assets/mic.svg" alt="Record" onerror="this.replaceWith(document.createTextNode('🎙️'))"/>
+    </button>
+
+    <button id="sendBtn" class="icon-btn send-btn ripple" title="Send">
+      <img src="assets/send.svg" alt="Send" onerror="this.replaceWith(document.createTextNode('➤'))"/>
+    </button>
+
+    <div id="recordingBar" class="recording-bar hidden">
+      <button id="cancelRecordBtn" class="icon-btn danger" title="Cancel recording">
+        <img src="assets/trash.svg" alt="Cancel" onerror="this.replaceWith(document.createTextNode('🗑️'))"/>
+      </button>
+      <span class="rec-dot"></span>
+      <span id="recordTimer" class="rec-timer">0:00</span>
+      <span class="rec-label">Recording voice message…</span>
+      <button id="sendRecordBtn" class="icon-btn send-btn" title="Send voice message">
+        <img src="assets/check.svg" alt="Send" onerror="this.replaceWith(document.createTextNode('✔'))"/>
+      </button>
+    </div>
+  </footer>
+
+  <div id="emojiPickerWrap" class="emoji-picker-wrap hidden">
+    <emoji-picker id="emojiPicker"></emoji-picker>
+  </div>
+</main>
+
+<audio id="messageSound" src="sounds/message.mp3" preload="auto"></audio>
+<audio id="joinSound" src="sounds/join.mp3" preload="auto"></audio>
+<audio id="leaveSound" src="sounds/leave.mp3" preload="auto"></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
