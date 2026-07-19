@@ -169,10 +169,22 @@ Because there's no database, there's no migration step, no connection string, an
 
 ---
 
+## 🌐 Live Demo
+
+**Demo:** https://echolink-messenger.onrender.com
+
 ## 📄 License
 
 Released under the [MIT License](LICENSE).
 
 ## 👤 Author
 
-Built as an open, no-frills demonstration of a fully ephemeral, database-free real-time chat architecture.
+**Barath N**
+
+GitHub: https://github.com/Barath-codes-007
+
+EchoLink Messenger was independently designed and developed by me as a full-stack web application using HTML, CSS, JavaScript, Node.js, Express, and Socket.IO. The project was created to demonstrate real-time communication, temporary room-based messaging, and modern responsive web development.
+
+If you like this project, consider giving it a ⭐ on GitHub.
+
+---
