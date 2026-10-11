@@ -41,26 +41,19 @@ app.get("/health", (_req, res) => {
 const rooms = new Map();
 
 /* ---------------- Helpers ---------------- */
+// NOTE: The server stores text exactly as typed (no HTML-escaping here).
+// Escaping is done once, at render time on the client. Escaping on both sides
+// caused characters like " ' & < > to show up as &quot; &#39; &amp; etc.
 function sanitizeText(str) {
   if (typeof str !== "string") return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .slice(0, MAX_MESSAGE_LENGTH);
+  return str.slice(0, MAX_MESSAGE_LENGTH);
 }
 
 function sanitizeFileName(str) {
   if (typeof str !== "string") return "file";
   const clean = str
     .replace(/[\\/]/g, "_")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
+    .replace(/[\u0000-\u001f]/g, "")
     .slice(0, MAX_FILENAME_LENGTH)
     .trim();
   return clean || "file";

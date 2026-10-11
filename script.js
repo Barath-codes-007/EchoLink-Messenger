@@ -102,10 +102,15 @@
   });
 
   /* ---------------- Sanitization ---------------- */
+  // Escapes text for safe use inside innerHTML AND inside HTML attributes.
+  // (Server sends raw text, so this is the only place escaping happens.)
   function sanitize(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function isValidRoomCode(code) {
@@ -320,7 +325,7 @@
 
   function linkify(escapedHtml) {
     // Operates on already-escaped text, so this only wraps plain substrings — safe.
-    const urlPattern = /((https?:\/\/|www\.)[^\s<]+)/gi;
+    const urlPattern = /((https?:\/\/|www\.)(?:(?!&quot;|&lt;|&gt;|&#39;)[^\s<])+)/gi;
     return escapedHtml.replace(urlPattern, (match) => {
       const href = match.startsWith("http") ? match : `https://${match}`;
       return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="msg-link">${match}</a>`;
